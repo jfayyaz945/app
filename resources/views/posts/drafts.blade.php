@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -6,10 +7,7 @@
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    Posts
-                    @can('create-post')
-                    <a class="pull-right btn btn-sm btn-primary" href="{{ route('create_post') }}">New</a>
-                    @endcan
+                    Drafts <a class="btn btn-sm btn-default pull-right" href="{{ route('list_posts') }}">Return</a>
                 </div>
 
                 <div class="panel-body">
@@ -18,13 +16,14 @@
                         <div class="col-sm-6 col-md-4">
                             <div class="thumbnail">
                             <div class="caption">
-                                <h3><a href="{{ route('edit_post', ['id' => $post->id]) }}">{{ $post->title }}</a></h3>
+                                <h3><a href="{{ route('show_post', ['id' => $post->id]) }}">{{ $post->title }}</a></h3>
                                 <p>{{ str_limit($post->body, 50) }}</p>
-                                @can('update-post', $post)
                                 <p>
-                                    <a href="{{ route('edit_post', ['id' => $post->id]) }}" class="btn btn-sm btn-default" role="button">Edit</a> 
-                                </p>
+                                @can('publish-post')
+                                    <a href="{{ route('publish_post', ['id' => $post->id]) }}" class="btn btn-sm btn-default" role="button">Publish</a> 
                                 @endcan
+                                    <a href="{{ route('edit_post', ['id' => $post->id]) }}" class="btn btn-default" role="button">Edit</a> 
+                                </p>
                             </div>
                             </div>
                         </div>

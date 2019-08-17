@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Post;
+use Auth;
+use Gate;
 
 class PostController extends Controller
 {
@@ -17,111 +19,52 @@ class PostController extends Controller
         $this->middleware('auth');
     }
     
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        $posts = Post::latest()->paginate(20);
-        return view('posts.index',compact('posts'))
-            ->with('i', (request()->input('page', 1) - 1) * 20);
+        $posts = Post::where('published', true)->paginate(20);
+        return view('posts.index', compact('posts'));
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         return view('posts.create');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required',
-            'slug' => 'required',
-            'body' => 'required',
-            'user_id' => 'required',
-        ]);
-
-        Post::create($request->all());
-
-        return redirect()
-                ->route('posts.index')
-                ->with('success','Post created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        $post = Post::findOrFail($id);
-        return view('posts.show',compact('post'));
+        $post = Post::where('published', true)->findOrFail($id);
+        return view('posts.show', compact('post'));
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    public function store(Request $request)
     {
-        $post = Post::findOrFail($id);
-        return view('posts.edit',compact('post'));
+        $data            = $request->only('title', 'body');
+        $data['slug']    = str_slug($data['title']);
+        $data['user_id'] = auth()->user()->id;
+        $post            = Post::create($data);
+        return redirect()->route('edit_post', ['id' => $post->id]);
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function edit(Post $post)
     {
-        $post = Post::findOrFail($id);
-        $request->validate([
-            'title' => 'required',
-            'slug' => 'required',
-            'body' => 'required',
-            'user_id' => 'required',
-        ]);
-
-        $post->update($request->all());
-
-        return redirect()
-                ->route('posts.index')
-                ->with('success','Post updated successfully');
+        return view('posts.edit', compact('post'));
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function update(Post $post, Request $request)
     {
-        $post = Post::findOrFail($id);
-        $post->delete();
-        return redirect()
-                ->route('posts.index')
-                ->with('success','Post deleted successfully');
+        $data         = $request->only('title', 'body');
+        $data['slug'] = str_slug($data['title']);
+        $post->fill($data)->save();
+        return back();
     }
-
+    public function drafts()
+    {
+        $draftsQuery = Post::where('published', false);
+        if (Gate::denies('see-all-drafts')) {
+            $draftsQuery = $draftsQuery->where('user_id', auth()->user()->id);
+        }
+        $posts = $draftsQuery->paginate();
+        return view('posts.drafts', compact('posts'));
+    }
+    public function publish(Post $post)
+    {
+        $post->published = true;
+        $post->save();
+        return back();
+    }
 }

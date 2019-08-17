@@ -5,7 +5,7 @@
         <div class="card">
             <div class="card-body card-block">
 
-                <form action="{{ route('posts.index') }}" method="GET">
+                <form action="{{ route('list_posts') }}" method="GET">
                     @csrf
                     <div class="row">
                             <div class="col-xs-4 col-sm-4 col-md-4">
