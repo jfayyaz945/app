@@ -7,7 +7,7 @@ use App\Post;
 use Auth;
 use Gate;
 
-class PostController extends Controller
+class BranchController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -21,7 +21,7 @@ class PostController extends Controller
     
     public function index()
     {
-        $posts = Post::/* where('published', true)-> */paginate(20);
+        $posts = Post::where('published', true)->paginate(20);
         return view('posts.index', compact('posts'));
     }
     public function create()

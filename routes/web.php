@@ -20,6 +20,15 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 
 //Route::resource('posts','PostController');
+Route::get('permissions/get_by_module', 'PermissionController@get_by_module')->name('permissions.get_by_module');
+Route::post('permissions/save_permissions', 'PermissionController@save_permissions')->name('permissions.save_permissions');
+
+Route::resource('roles','RoleController');
+Route::resource('permissions','PermissionController');
+Route::resource('users','UserController');
+Route::resource('regions','RegionController');
+Route::resource('areas','AreaController');
+Route::resource('branches','BranchController');
 
 Route::get('/posts', 'PostController@index')->name('list_posts');
 Route::group(['prefix' => 'posts'], function () {
